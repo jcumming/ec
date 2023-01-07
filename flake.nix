@@ -23,7 +23,10 @@
             src = ./.;
 
             buildPhase = ''
-              make BOARD=system76/${board} REV=${self.shortRev or "dirty"}
+              make \
+                BOARD=system76/${board} \
+                REV=${self.shortRev or "dirty"} \
+                DATE=${builtins.substring 0 8 (self.lastModifiedDate or self.lastModified or "19700101")}
             '';
 
             installPhase = ''
