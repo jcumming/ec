@@ -4,6 +4,24 @@
 This fork includes a `flake.nix` for building the EC firmware. It has not been
 tested and may generate images that will make your laptop unbootable.
 
+To build the firmware images (for oryp9 -- take a look at flake.nix to see how to add more):
+
+```sh
+$ nix build .#oryp9-ec-firmware
+```
+
+To build the flash utility:
+
+```sh
+$ nix build .#system76_ectool
+```
+
+To flash. This is the part that will probably brick things.
+
+```sh
+$ sudo ./result/bin/system76_ectool flash <firmware>/ec.rom
+```
+
 # System76 EC
 
 System76 EC is a GPLv3 licensed embedded controller firmware for System76
