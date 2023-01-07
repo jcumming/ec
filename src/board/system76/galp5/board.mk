@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
+board-y += board.c
+board-y += gpio.c
+
 EC=ite
-EC_VARIANT=it5570e
+CONFIG_EC_ITE_IT5570E=y
 
 # Enable eSPI
-CFLAGS+=-DEC_ESPI=1
+CONFIG_BUS_ESPI=y
 
 # Use S0ix
 CFLAGS+=-DUSE_S0IX=1

@@ -14,10 +14,11 @@
 #include <board/power.h>
 #include <board/pmc.h>
 #include <board/pnp.h>
+#include <board/wireless.h>
 #include <common/debug.h>
 
-#include <ec/espi.h>
-#if EC_ESPI
+#if CONFIG_BUS_ESPI
+    #include <ec/espi.h>
     #include <board/espi.h>
 #endif
 
@@ -181,6 +182,9 @@ void power_init(void) {
 }
 
 void power_on(void) {
+    // Configure WLAN GPIOs before powering on
+    wireless_power(true);
+
     DEBUG("%02X: power_on\n", main_cycle);
 
     // See Figure 12-19 in Whiskey Lake Platform Design Guide
@@ -240,9 +244,9 @@ void power_on(void) {
         }
 
         // Check for VW changes
-        #if EC_ESPI
+        #if CONFIG_BUS_ESPI
             espi_event();
-        #endif // EC_ESPI
+        #endif // CONFIG_BUS_ESPI
 
         // Extra wait until SUSPWRDNACK is valid
         delay_ms(1);
@@ -292,6 +296,9 @@ void power_off(void) {
     GPIO_SET_DEBUG(PCH_DPWROK_EC, false);
 #endif // HAVE_PCH_DPWROK_EC
     tPCH14;
+
+    // Configure WLAN GPIOs after powering off
+    wireless_power(false);
 
     update_power_state();
 }
@@ -484,11 +491,11 @@ void power_event(void) {
     #endif
     if(rst_new && !rst_last) {
         DEBUG("%02X: PLT_RST# de-asserted\n", main_cycle);
-#if EC_ESPI
+#if CONFIG_BUS_ESPI
         espi_reset();
-#else // EC_ESPI
+#else // CONFIG_BUS_ESPI
         power_cpu_reset();
-#endif // EC_ESPI
+#endif // CONFIG_BUS_ESPI
     }
     rst_last = rst_new;
 
@@ -505,8 +512,8 @@ void power_event(void) {
     #endif
 #endif // HAVE_SLP_SUS_N
 
-#if EC_ESPI
-    if (vw_get(&VW_SUS_PWRDN_ACK) == VWS_HIGH)
+#if CONFIG_BUS_ESPI
+    // ESPI systems, always power off if in S5 power state
 #elif HAVE_SUSWARN_N
     // EC must keep VccPRIM powered if SUSPWRDNACK is de-asserted low or system
     // state is S3
