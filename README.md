@@ -1,3 +1,9 @@
+
+# Nix Flake fork
+
+This fork includes a `flake.nix` for building the EC firmware. It has not been
+tested and may generate images that will make your laptop unbootable.
+
 # System76 EC
 
 System76 EC is a GPLv3 licensed embedded controller firmware for System76

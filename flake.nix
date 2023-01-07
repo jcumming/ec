@@ -31,8 +31,7 @@
 
             installPhase = ''
               mkdir -p $out
-              cp build/system76/${board}/*/ec.rom $out
-              set +x
+              cp build/system76/${board}/*/ec.* $out
             '';
           };
       in rec {
