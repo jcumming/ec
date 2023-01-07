@@ -15,7 +15,11 @@
           inherit system;
           config = {allowUnsupportedSystem = true;};
         };
-        buildInputs = with pkgs; [stdenv avrdude pkgsCross.avr.buildPackages.gcc hidapi systemdMinimal pkg-config rustup sdcc xxd git];
+
+        versionRev = self.shortRev or "dirty";
+        versionDate = builtins.substring 0 8 (self.lastModifiedDate or self.lastModified or "19700101");
+        buildInputs = with pkgs; [stdenv avrdude pkgsCross.avr.buildPackages.gcc sdcc xxd];
+
         mkBoard = board:
           pkgs.stdenv.mkDerivation {
             inherit buildInputs;
@@ -23,10 +27,7 @@
             src = ./.;
 
             buildPhase = ''
-              make \
-                BOARD=system76/${board} \
-                REV=${self.shortRev or "dirty"} \
-                DATE=${builtins.substring 0 8 (self.lastModifiedDate or self.lastModified or "19700101")}
+              make BOARD=system76/${board} REV=${versionRev} DATE=${versionDate};
             '';
 
             installPhase = ''
@@ -38,6 +39,15 @@
         formatter = pkgs.alejandra;
         devShells.default = pkgs.mkShell {inherit buildInputs;};
         packages = flake-utils.lib.flattenTree {
+          system76_ectool = pkgs.rustPlatform.buildRustPackage rec {
+            pname = "system76_ectool";
+            version = versionDate + "-" + versionRev;
+            src = ./tool;
+            nativeBuildInputs = with pkgs; [pkg-config];
+            buildInputs = with pkgs; [hidapi systemdMinimal];
+            cargoLock.lockFile = ./tool/Cargo.lock;
+          };
+
           oryp9-ec-firmware = mkBoard "oryp9";
           galp5-ec-firmware = mkBoard "galp5";
         };
